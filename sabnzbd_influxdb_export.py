@@ -18,7 +18,7 @@ def qstatus(url,influxdb_client):
 		data = json.loads(requests.get('{0}{1}'.format(url, '&mode=qstatus'), verify=False).text)
 
 		if data:
-		                        speed = float(data['speed'])
+		                        speed = float(data['kbpersec'])
 					total_mb_left = float(data['mbleft']) # mbleft?
 
 					# loop over the jobs
