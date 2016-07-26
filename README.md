@@ -32,7 +32,7 @@ I suggest you intall the script as a service to boot with your OS.
 ## Exported Data
   * Queue
     - # Jobs
-    - Total size (MB) left
+    - Total size left (MB)
     - Speed
   * Server Stats
     - Total downloaded
