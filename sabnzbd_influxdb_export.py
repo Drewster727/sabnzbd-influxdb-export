@@ -81,11 +81,10 @@ def init_exporting(interval, url, influxdb_client):
 	while True:
 		queuestatus = Process(target=qstatus, args=(url,influxdb_client,))
 		queuestatus.start()
-	    	queuestatus.join()
 
                 serverstats = Process(target=server_stats, args=(url,influxdb_client,))
 		serverstats.start()
-	    	serverstats.join()
+
 		time.sleep(interval)
 
 def get_url(protocol,host,port,apikey):
