@@ -31,7 +31,7 @@ I suggest you intall the script as a service to boot with your OS.
 
 ## Exported Data
   * Queue
-    - # Jobs
+    - `#` Jobs
     - Total size left (MB)
     - Speed
   * Server Stats
