@@ -1,0 +1,13 @@
+[Unit]
+Description=Sabnzbd2InfluxDB Service
+After=multi-user.target
+
+[Service]
+Type=idle
+ExecStart=/usr/bin/python <path-to-git-clone>/sabnzbd_influxdb_export.py --sabnzbdhost <host> --sabnzbdapikey <key>
+Restart=on-failure
+RestartSec=15s
+TimeoutSec=15s
+
+[Install]
+WantedBy=multi-user.target
