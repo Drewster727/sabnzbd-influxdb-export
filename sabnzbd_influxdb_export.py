@@ -35,30 +35,27 @@ def parse_args():
     
 def qstatus(url,influxdb_client):
     try:
-        data = requests.get('{0}{1}'.format(url, '&mode=qstatus'), verify=False).json()
+        data = requests.get('{0}{1}'.format(url, '&mode=queue'), verify=False).json()
 
         if data:
-            speed = float(data['kbpersec'])
-            total_mb_left = float(data['mbleft']) # mbleft?
-
-            # loop over the jobs
-            jobs = data['jobs']
-            total_jobs = 0
-
-            for s in jobs:
-                total_jobs += 1
-
-                json_body = [
-                {
-                    "measurement": "qstatus",
-                    "time": datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
-                    "fields" : {
-                        "speed": speed,
-                        "total_mb_left": total_mb_left,
-                        "total_jobs": total_jobs
-                    }
-                }]
-                influxdb_client.write_points(json_body)
+            queue = data['queue]
+            speed = float(queue['kbpersec'])
+            total_mb_left = float(queue['mbleft']) # mbleft?
+            jobs = float(queue['noofslots'])
+            status = queue['status']
+            
+            json_body = [
+            {
+                "measurement": "qstatus",
+                "time": datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
+                "fields" : {
+                    "speed": speed,
+                    "total_mb_left": total_mb_left,
+                    "total_jobs": total_jobs,
+                    "status": status
+                }
+            }]
+            influxdb_client.write_points(json_body)
                 
     except Exception as e:
         print str(e)
