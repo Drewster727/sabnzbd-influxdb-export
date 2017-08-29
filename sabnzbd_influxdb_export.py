@@ -60,7 +60,7 @@ def qstatus(url,influxdb_client):
                 }]
                 influxdb_client.write_points(json_body)
                 
-        except Exception,e:
+        except Exception as e:
             print str(e)
             pass
 
@@ -87,7 +87,7 @@ def server_stats(url,influxdb_client):
             }]
             influxdb_client.write_points(json_body)
             
-        except Exception,e:
+        except Exception as e:
             print str(e)
             pass
 
