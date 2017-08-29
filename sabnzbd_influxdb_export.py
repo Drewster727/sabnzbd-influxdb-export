@@ -1,4 +1,3 @@
-
 #!/usr/bin/python
 
 import time
@@ -13,82 +12,12 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning) # suppress un
 
 url_format = '{0}://{1}:{2}/sabnzbd/api?apikey={3}&output=json'
 
-def qstatus(url,influxdb_client):
-        try:
-		data = json.loads(requests.get('{0}{1}'.format(url, '&mode=qstatus'), verify=False).text)
-
-		if data:
-		                        speed = float(data['kbpersec'])
-					total_mb_left = float(data['mbleft']) # mbleft?
-
-					# loop over the jobs
-					jobs = data['jobs']
-					total_jobs = 0
-
-					for s in jobs:
-                    			    total_jobs += 1
-
-					json_body = [
-							{
-									"measurement": "qstatus",
-									"time": datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
-									"fields" : {
-						                                            "speed": speed,
-											"total_mb_left": total_mb_left,
-						                                           "total_jobs": total_jobs
-									}
-							}
-					]
-					influxdb_client.write_points(json_body)
-        except Exception,e:
-	  print str(e)
-          pass
-
-def server_stats(url,influxdb_client):
-        try:
-		data = json.loads(requests.get('{0}{1}'.format(url, '&mode=server_stats'), verify=False).text)
-
-		if data:
-					total = long(data['total'])
-                    			total_month = long(data['month'])
-         			        total_week = long(data['week'])
-			                total_day = long(data['day'])
-
-					json_body = [
-							{
-									"measurement": "server_stats",
-									"time": datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
-									"fields" : {
-						                                            "total": total,
-                                                                    "total_month": total_month,
-                                                                    "total_week": total_week,
-                                                                    "total_day": total_day
-									}
-							}
-					]
-					influxdb_client.write_points(json_body)
-        except Exception,e:
-	  print str(e)
-          pass
-
-def create_database(influxdb_client, database):
-	try:
-		influxdb_client.query('CREATE DATABASE IF NOT EXISTS {0}'.format(database))
-	except Exception:
-	  pass
-
-def init_exporting(interval, url, influxdb_client):
-	while True:
-		queuestatus = Process(target=qstatus, args=(url,influxdb_client,))
-		queuestatus.start()
-
-                serverstats = Process(target=server_stats, args=(url,influxdb_client,))
-		serverstats.start()
-
-		time.sleep(interval)
-
-def get_url(protocol,host,port,apikey):
-	return url_format.format(protocol,host,port,apikey)
+def main():
+    args = parse_args()
+    url = get_url(args.sabnzbdwebprotocol, args.sabnzbdhost, args.sabnzbdport, args.sabnzbdapikey)
+    influxdb_client = InfluxDBClient(args.influxdbhost, args.influxdbport, args.influxdbuser, args.influxdbpassword, args.influxdbdatabase)
+    create_database(influxdb_client, args.influxdbdatabase)
+    init_exporting(args.interval, url, influxdb_client)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Export SABnzbd data to influxdb')
@@ -103,10 +32,83 @@ def parse_args():
     parser.add_argument('--influxdbpassword', type=str, required=False, default="", help='InfluxDB password')
     parser.add_argument('--influxdbdatabase', type=str, required=False, default="sabnzbd", help='InfluxDB database')
     return parser.parse_args()
+    
+def qstatus(url,influxdb_client):
+    try:
+        data = requests.get('{0}{1}'.format(url, '&mode=qstatus'), verify=False).json()
+
+        if data:
+            speed = float(data['kbpersec'])
+            total_mb_left = float(data['mbleft']) # mbleft?
+
+            # loop over the jobs
+            jobs = data['jobs']
+            total_jobs = 0
+
+            for s in jobs:
+                total_jobs += 1
+
+                json_body = [
+                {
+                    "measurement": "qstatus",
+                    "time": datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
+                    "fields" : {
+                        "speed": speed,
+                        "total_mb_left": total_mb_left,
+                        "total_jobs": total_jobs
+                    }
+                }]
+                influxdb_client.write_points(json_body)
+                
+        except Exception,e:
+            print str(e)
+            pass
+
+def server_stats(url,influxdb_client):
+    try:
+        data = requests.get('{0}{1}'.format(url, '&mode=server_stats'), verify=False).json()
+
+        if data:
+            total = long(data['total'])
+            total_month = long(data['month'])
+            total_week = long(data['week'])
+            total_day = long(data['day'])
+
+            json_body = [
+            {
+                "measurement": "server_stats",
+                "time": datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
+                "fields" : {
+                    "total": total,
+                    "total_month": total_month,
+                    "total_week": total_week,
+                    "total_day": total_day
+                }
+            }]
+            influxdb_client.write_points(json_body)
+            
+        except Exception,e:
+            print str(e)
+            pass
+
+def create_database(influxdb_client, database):
+    try:
+        influxdb_client.query('CREATE DATABASE {0}'.format(database))
+    except Exception:
+        pass
+
+def init_exporting(interval, url, influxdb_client):
+    while True:
+        queuestatus = Process(target=qstatus, args=(url,influxdb_client,))
+        queuestatus.start()
+
+        serverstats = Process(target=server_stats, args=(url,influxdb_client,))
+        serverstats.start()
+
+        time.sleep(interval)
+
+def get_url(protocol,host,port,apikey):
+    return url_format.format(protocol,host,port,apikey)
 
 if __name__ == '__main__':
-    args = parse_args()
-    url = get_url(args.sabnzbdwebprotocol, args.sabnzbdhost, args.sabnzbdport, args.sabnzbdapikey)
-    influxdb_client = InfluxDBClient(args.influxdbhost, args.influxdbport, args.influxdbuser, args.influxdbpassword, args.influxdbdatabase)
-    create_database(influxdb_client, args.influxdbdatabase)
-    init_exporting(args.interval, url, influxdb_client)
+    main()
