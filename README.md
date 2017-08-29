@@ -47,6 +47,6 @@ I suggest you intall the script as a service to boot with your OS.
 ## Use-Case
   With the data exported to influxdb, you can create some useful stats/graphs in graphing tools such as grafana (http://grafana.org/)
   
-  ![alt tag](https://cloud.githubusercontent.com/assets/4528753/17158503/5d51bc66-535c-11e6-922d-4dcc24444ad6.png)
+  ![alt tag](https://user-images.githubusercontent.com/4528753/29847166-e912f8ec-8cdf-11e7-8dc0-7155435130f6.png)
   
   
