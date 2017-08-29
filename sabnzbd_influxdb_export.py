@@ -41,7 +41,7 @@ def qstatus(url,influxdb_client):
             queue = data['queue']
             speed = float(queue['kbpersec'])
             total_mb_left = float(queue['mbleft']) # mbleft?
-            jobs = float(queue['noofslots'])
+            total_jobs = float(queue['noofslots'])
             status = queue['status']
             
             json_body = [
