@@ -21,12 +21,20 @@ I suggest you intall the script as a service to boot with your OS.
   * --influxdbport (default: 8086)
   * --influxdbuser (default: empty)
   * --influxdbpassword (default: empty)
-  * --influxdbdatabase (default: plexpy)
+  * --influxdbdatabase (default: sabnzbd)
 
 ## Example
 
   ```
   python /path/to/sabnzbd_influxdb_export.py --sabnzbdhost <host> --sabnzbdapikey <key>
+  ```
+
+## Docker Example
+
+  ```
+  cd <folder>
+  docker build -t sabnzbd_influxdb_export .
+  docker run -d --name=sabnzbd_influxdb_export --restart unless-stopped -e SABNZBD_HOST=<host> -e SABNZBD_KEY=<key> -e INFLUXDB_HOST=<influxdbhost> -e INFLUXDB_DB=<influxdbdatabase> -e INTERVAL=15 sabnzbd_influxdb_export
   ```
 
 ## Exported Data
@@ -40,13 +48,11 @@ I suggest you intall the script as a service to boot with your OS.
     - Total downloaded (month)
     - Total downloaded (week)
     - Total downloaded (day)
-  
+
 ### To Do:
   * Coming soon...
 
 ## Use-Case
   With the data exported to influxdb, you can create some useful stats/graphs in graphing tools such as grafana (http://grafana.org/)
-  
+
   ![alt tag](https://user-images.githubusercontent.com/4528753/29847166-e912f8ec-8cdf-11e7-8dc0-7155435130f6.png)
-  
-  
